@@ -1,48 +1,28 @@
-#!/usr/bin/env bash
+import sys
 
-check_factor()
-{
-	if [ $# -ne 3 ];
-        then
-                args=("$@")
-                =0
-                num2=1
-                for a in ${args[*]};
-                do
-                        if [ $count -gt 1 ];
-                        then
-                                num2=$(echo $a*$num2 | bc)
-                        fi
-                        count=$((count + 1))
-                done
-        else
-                num2=$3
-        fi
+def factorize_number(n):
+    factors = []
+    for i in range(2, n // 2 + 1):
+        if n % i == 0:
+            factors.append((i, n // i))
+    return factors
 
-        num1=$2
-        num=$(echo "$1" | tr ':' '=')
+def main(filename):
+    try:
+        with open(filename, 'r') as file:
+            for line in file:
+                n = int(line.strip())
+                factor_pairs = factorize_number(n)
+                for pair in factor_pairs:
+                    print(f"{n}={pair[0]}*{pair[1]}")
+    except FileNotFoundError:
+        print(f"File '{filename}' not found.")
+    except ValueError:
+        print("Invalid data in the file. All lines should contain valid natural numbers greater than 1.")
 
-        result=$(echo "if($num2 > $num1) 1 else 0" | bc)
-	        if ((result == 1)); then
-		        numcp=$num1
-		        num1=$num2
-		        num2=$numcp
-                fi
-
-        echo "$num$num1*$num2"
-}
-
-if [ $# -ne 1 ]
-then
-        echo 'Usage: factors <file>'
-        exit 1
-else
-
-        while read i
-        do
-
-                result=$(factor "$i")
-                check_factor $result
-
-        done < "$1"
-fi
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: factors <file>")
+    else:
+        filename = sys.argv[1]
+        main(filename)
