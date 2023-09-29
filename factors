@@ -1,29 +1,74 @@
+#!/usr/bin/python3
+from sys import argv
+from math import sqrt
+
+
+def factor():
+    with open(argv[1]) as f:
+        for line in f:
+            num = int(line)
+            print("{:d}=".format(num), end="")
+            if num % 2 == 0:
+                print("{}*2".format(num//2))
+                continue
+            sqn = int(sqrt(num))
+            if sqn % 2 == 0:
+                sqn += 1
+            for i in range(3, sqn + 1, 2):
+                if num % i == 0:
+                    print("{}*{}".format(i, num//i))
+                    break
+            if num % i != 0:
+                print("{}={}*1".format(num, num))
+
+
+factor()
 #!/usr/bin/env bash
-import sys
+# is a factors challenge
 
-def factorize_number(n):
-    factors = []
-    for i in range(2, n // 2 + 1):
-        if n % i == 0:
-            factors.append((i, n // i))
-    return factors
+check_factor()
+{
+	if [ $# -ne 3 ];
+        then
+                args=("$@")
+                count=0
+                num2=1
+                for a in ${args[*]};
+                do
+                        if [ $count -gt 1 ];
+                        then
+                                num2=$(echo $a*$num2 | bc)
+                        fi
+                        count=$((count + 1))
+                done
+        else
+                num2=$3
+        fi
 
-def main(filename):
-    try:
-        with open(filename, 'r') as file:
-            for line in file:
-                n = int(line.strip())
-                factor_pairs = factorize_number(n)
-                for pair in factor_pairs:
-                    print(f"{n}={pair[0]}*{pair[1]}")
-    except FileNotFoundError:
-        print(f"File '{filename}' not found.")
-    except ValueError:
-        print("Invalid data in the file. All lines should contain valid natural numbers greater than 1.")
+        num1=$2
+        num=$(echo "$1" | tr ':' '=')
 
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: factors <file>")
-    else:
-        filename = sys.argv[1]
-        main(filename)
+        result=$(echo "if($num2 > $num1) 1 else 0" | bc)
+	        if ((result == 1)); then
+		        numcp=$num1
+		        num1=$num2
+		        num2=$numcp
+                fi
+
+        echo "$num$num1*$num2"
+}
+
+if [ $# -ne 1 ]
+then
+        echo 'Usage: factors <file>'
+        exit 1
+else
+
+        while read i
+        do
+
+                result=$(factor "$i")
+                check_factor $result
+
+        done < "$1"
+fi
